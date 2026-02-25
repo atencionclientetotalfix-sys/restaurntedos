@@ -1,0 +1,30 @@
+{
+  "name": "restaurante-dos",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@aws-sdk/rds-signer": "^3.971.0",
+    "@vercel/functions": "^3.3.6",
+    "@vercel/postgres": "^0.10.0",
+    "dotenv": "^17.2.3",
+    "html-to-image": "^1.11.13",
+    "jspdf": "^4.0.0",
+    "jspdf-autotable": "^5.0.7",
+    "next": "16.1.1",
+    "pg": "^8.17.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "uuid": "^13.0.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "eslint": "^9",
+    "eslint-config-next": "16.1.1"
+  }
+}
