@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@aws-sdk/rds-signer": "^3.971.0",
+    "@supabase/supabase-js": "^2.97.0",
     "@vercel/functions": "^3.3.6",
     "@vercel/postgres": "^0.10.0",
     "dotenv": "^17.2.3",
@@ -24,6 +25,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@types/node": "^25.3.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.1"
   }

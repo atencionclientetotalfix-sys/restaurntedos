@@ -1,8 +1,7 @@
 
 import { NextResponse } from 'next/server';
-import { writeFile, unlink } from 'fs/promises';
-import path from 'path';
 import { sql } from '@/lib/db';
+import { supabase } from '@/lib/supabase';
 
 // GET: List companies
 export async function GET() {
@@ -14,16 +13,21 @@ export async function GET() {
     }
 }
 
+// Helper to sanitize filename
+const sanitizeFilename = (name) => {
+    return name.replace(/[^a-z0-9.]/gi, '_').toLowerCase();
+};
+
 // POST: Create/Update company with optional Logo
 export async function POST(request) {
     try {
         const formData = await request.formData();
         const name = formData.get('name');
-        const rut = formData.get('rut');
-        const address = formData.get('address');
-        const contact_name = formData.get('contact_name');
-        const contact_email = formData.get('contact_email');
-        const contact_phone = formData.get('contact_phone');
+        const rut = formData.get('rut') || '';
+        const address = formData.get('address') || '';
+        const contact_name = formData.get('contact_name') || '';
+        const contact_email = formData.get('contact_email') || '';
+        const contact_phone = formData.get('contact_phone') || '';
 
         const file = formData.get('logo'); // File object
         const id = formData.get('id'); // Optional, for update
@@ -33,29 +37,35 @@ export async function POST(request) {
         }
 
         let logoPath = null;
-        if (file && file.size > 0) {
-            // Note: In Vercel serverless, writing to disk (public/uploads) is NOT persistent.
-            // This will work for the current session but image will be gone on next deploy/cold start.
-            // For production, you should upload to Vercel Blob or AWS S3.
-            // We will keep this for now but warn user or simply accept it's temporary.
-            // However, to make it work 'mostly' on Vercel without crash, we write to /tmp usually, 
-            // but serving from /tmp is hard.
-            // For now, we will assume this might break image persistence.
 
+        if (file && file.size > 0) {
             const bytes = await file.arrayBuffer();
             const buffer = Buffer.from(bytes);
 
-            // Using Vercel Blob Storage is the right way, but requires setup.
-            // We will stick to local FS logic but it WON'T persist in Vercel.
-            // User needs to be aware or we fix this later.
+            const safeName = sanitizeFilename(file.name);
+            const filename = `${Date.now()}_${safeName}`;
 
-            const ext = file.name.split('.').pop();
-            const filename = `logo-${Date.now()}.${ext}`;
-            const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-            const filepath = path.join(uploadDir, filename);
+            // Upload to Supabase Storage (Bucket: 'logos')
+            const { data, error } = await supabase.storage
+                .from('logos')
+                .upload(filename, buffer, {
+                    contentType: file.type,
+                    upsert: true
+                });
 
-            await writeFile(filepath, buffer);
-            logoPath = `/uploads/${filename}`;
+            if (error) {
+                console.error("Supabase Storage Error:", error);
+                // If bucket doesn't exist, we might get an error. 
+                // In a real app, you'd ensure bucket exists via dashboard.
+                throw new Error("Error al subir imagen a Supabase Storage: " + error.message);
+            }
+
+            // Get Public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('logos')
+                .getPublicUrl(filename);
+
+            logoPath = publicUrl;
         }
 
         if (id) {
@@ -88,7 +98,7 @@ export async function POST(request) {
         return NextResponse.json({ success: true });
 
     } catch (e) {
-        console.error(e);
+        console.error("POST Company Error:", e);
         return NextResponse.json({ error: e.message }, { status: 500 });
     }
 }

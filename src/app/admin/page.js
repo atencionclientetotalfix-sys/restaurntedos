@@ -148,6 +148,8 @@ export default function AdminPage() {
         fetchWorkers();
     };
 
+    const [companyPreview, setCompanyPreview] = useState(null);
+
     const handleAddCompany = async (e) => {
         e.preventDefault();
         const fd = new FormData();
@@ -158,15 +160,35 @@ export default function AdminPage() {
         if (newCompany.contact_email) fd.append('contact_email', newCompany.contact_email);
         if (newCompany.contact_phone) fd.append('contact_phone', newCompany.contact_phone);
 
-        if (newCompany.id) fd.append('id', newCompany.id); // For Updates
+        if (newCompany.id) fd.append('id', newCompany.id);
 
         if (companyLogo) fd.append('logo', companyLogo);
 
-        await fetch('/api/companies', { method: 'POST', body: fd });
-        fetchCompanies();
-        setNewCompany({ name: '' });
-        setCompanyLogo(null);
-        alert('Empresa guardada');
+        try {
+            const res = await fetch('/api/companies', { method: 'POST', body: fd });
+            const data = await res.json();
+
+            if (res.ok) {
+                fetchCompanies();
+                setNewCompany({ name: '' });
+                setCompanyLogo(null);
+                setCompanyPreview(null);
+                alert('Empresa guardada correctamente');
+            } else {
+                alert('Error: ' + (data.error || 'No se pudo guardar la empresa'));
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Error de conexión al guardar empresa');
+        }
+    };
+
+    const handleLogoChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setCompanyLogo(file);
+            setCompanyPreview(URL.createObjectURL(file));
+        }
     };
 
     const handleDeleteWorker = async (id) => {
@@ -903,9 +925,20 @@ export default function AdminPage() {
 
                                 <div>
                                     <label className="block mb-1 text-sm font-bold text-gray-400">Logo de la Empresa (Opcional)</label>
-                                    <input type="file" className="input" accept="image/*" onChange={e => setCompanyLogo(e.target.files[0])} />
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                        <input type="file" className="input" style={{ marginBottom: 0 }} accept="image/*" onChange={handleLogoChange} />
+                                        {(companyPreview || newCompany.logo_path) && (
+                                            <div style={{ width: '60px', height: '60px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #334155', background: '#0f172a' }}>
+                                                <img
+                                                    src={companyPreview || newCompany.logo_path}
+                                                    alt="Preview"
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                                <button className="btn">Guardar Empresa</button>
+                                <button className="btn">{newCompany.id ? 'Actualizar Empresa' : 'Guardar Empresa'}</button>
                             </form>
                         </div>
                         <div className="card">
@@ -916,7 +949,7 @@ export default function AdminPage() {
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                             <div style={{ width: '50px', height: '50px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', padding: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                                                 {c.logo_path ? (
-                                                    <img src={c.logo_path} alt="logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                                                    <img src={c.logo_path} alt="logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                                 ) : (
                                                     <span className="text-gray-500 text-xs">Logo</span>
                                                 )}
