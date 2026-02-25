@@ -16,6 +16,7 @@ export default function AdminPage() {
     const [companies, setCompanies] = useState([]);
     const [report, setReport] = useState(null);
     const [settings, setSettings] = useState({ restaurant_name: 'RESTAUTANTE DOS', restaurant_logo: '' });
+    const [savingSettings, setSavingSettings] = useState(false);
 
     useEffect(() => {
         fetch('/api/settings')
@@ -981,6 +982,7 @@ export default function AdminPage() {
                     <h2 className="text-xl font-bold mb-6 text-primary">Ajustes del Sistema</h2>
                     <form onSubmit={async (e) => {
                         e.preventDefault();
+                        setSavingSettings(true);
                         const fd = new FormData();
                         fd.append('restaurant_name', settings.restaurant_name);
                         const fileInput = e.target.querySelector('input[type="file"]');
@@ -990,16 +992,22 @@ export default function AdminPage() {
                             fd.append('restaurant_logo', settings.restaurant_logo);
                         }
 
-                        const res = await fetch('/api/settings', {
-                            method: 'POST',
-                            body: fd
-                        });
-                        const data = await res.json();
-                        if (res.ok) {
-                            if (data.restaurant_logo) setSettings({ ...settings, restaurant_logo: data.restaurant_logo });
-                            alert('Ajustes guardados');
-                        } else {
-                            alert('Error al guardar ajustes: ' + (data.error || ''));
+                        try {
+                            const res = await fetch('/api/settings', {
+                                method: 'POST',
+                                body: fd
+                            });
+                            const data = await res.json();
+                            if (res.ok) {
+                                if (data.restaurant_logo) setSettings({ ...settings, restaurant_logo: data.restaurant_logo });
+                                alert('Ajustes guardados correctamente');
+                            } else {
+                                alert('Error al guardar ajustes: ' + (data.error || ''));
+                            }
+                        } catch (err) {
+                            alert('Error de conexión');
+                        } finally {
+                            setSavingSettings(false);
                         }
                     }} className="flex flex-col gap-6">
                         <div>
@@ -1012,12 +1020,37 @@ export default function AdminPage() {
                             />
                         </div>
                         <div>
-                            <label className="text-sm block mb-2 font-bold text-gray-400">Logo del Sistema (PNG/JPG)</label>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <label className="text-sm block mb-2 font-bold text-gray-400">Logo del Sistema</label>
+                            <div className="flex flex-col items-center gap-4 p-6 border-2 border-dashed border-gray-700 rounded-2xl bg-gray-900/30">
+                                {settings.restaurant_logo ? (
+                                    <div className="relative group">
+                                        <div style={{ width: '120px', height: '120px', borderRadius: '15px', overflow: 'hidden', border: '1px solid #444', background: 'white', padding: '10px', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
+                                            <img
+                                                src={settings.restaurant_logo}
+                                                alt="Preview"
+                                                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                            />
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setSettings({ ...settings, restaurant_logo: '' })}
+                                            className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow-lg hover:bg-red-700 transition-colors"
+                                            title="Quitar Logo"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="text-gray-500 flex flex-col items-center">
+                                        <span style={{ fontSize: '3rem' }}>🖼️</span>
+                                        <p className="text-xs mt-2">Sin logo configurado</p>
+                                    </div>
+                                )}
+
                                 <input
                                     type="file"
-                                    className="input"
-                                    style={{ marginBottom: 0 }}
+                                    id="logo-upload"
+                                    className="hidden"
                                     accept="image/*"
                                     onChange={(e) => {
                                         const file = e.target.files[0];
@@ -1026,22 +1059,23 @@ export default function AdminPage() {
                                         }
                                     }}
                                 />
-                                {settings.restaurant_logo && (
-                                    <div style={{ width: '80px', height: '80px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #334155', background: 'white', padding: '4px' }}>
-                                        <img
-                                            src={settings.restaurant_logo}
-                                            alt="Preview"
-                                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                                        />
-                                    </div>
-                                )}
+                                <label
+                                    htmlFor="logo-upload"
+                                    className="btn-sm btn-outline cursor-pointer"
+                                    style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', width: 'auto' }}
+                                >
+                                    {settings.restaurant_logo ? '🔄 Cambiar Imagen' : '📁 Subir Imagen'}
+                                </label>
+
+                                <p className="text-[10px] text-gray-500 uppercase tracking-widest">PNG, JPG o SVG • Recomendado cuadrado</p>
                             </div>
-                            <p className="text-xs text-gray-500 mt-2">Recomendado: Fondo blanco o transparente, proporción cuadrada.</p>
                         </div>
-                        <button type="submit" className="btn">Guardar Cambios</button>
+                        <button type="submit" className="btn btn-shiny" disabled={savingSettings}>
+                            {savingSettings ? '⌛ GUARDANDO...' : '💾 GUARDAR CAMBIOS'}
+                        </button>
                     </form>
                 </div>
             )}
-        </div >
+        </div>
     );
 }
