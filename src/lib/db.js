@@ -142,6 +142,9 @@ export const initDb = async () => {
                 IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='orders' AND column_name='printed') THEN 
                     ALTER TABLE orders ADD COLUMN printed BOOLEAN DEFAULT FALSE; 
                 END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='orders' AND column_name='order_detail') THEN 
+                    ALTER TABLE orders ADD COLUMN order_detail TEXT; 
+                END IF;
             END $$;
         `;
         // Additional logging to confirm DB update
