@@ -163,6 +163,9 @@ export default function TicketPage({ params }) {
                     boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
                 }}>
                     <div style={{ marginBottom: '1rem' }}>
+                        {settings.restaurant_logo && (
+                            <img src={settings.restaurant_logo} alt="Logo" style={{ height: '40px', margin: '0 auto 0.5rem', display: 'block', objectFit: 'contain' }} />
+                        )}
                         <h1 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#0f172a' }}>{settings.restaurant_name}</h1>
                         <p style={{ fontSize: '0.75rem', color: '#64748b' }}>Ticket de Colación</p>
                     </div>

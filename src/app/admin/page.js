@@ -981,13 +981,26 @@ export default function AdminPage() {
                     <h2 className="text-xl font-bold mb-6 text-primary">Ajustes del Sistema</h2>
                     <form onSubmit={async (e) => {
                         e.preventDefault();
+                        const fd = new FormData();
+                        fd.append('restaurant_name', settings.restaurant_name);
+                        const fileInput = e.target.querySelector('input[type="file"]');
+                        if (fileInput?.files[0]) {
+                            fd.append('logo', fileInput.files[0]);
+                        } else {
+                            fd.append('restaurant_logo', settings.restaurant_logo);
+                        }
+
                         const res = await fetch('/api/settings', {
                             method: 'POST',
-                            body: JSON.stringify(settings),
-                            headers: { 'Content-Type': 'application/json' }
+                            body: fd
                         });
-                        if (res.ok) alert('Ajustes guardados');
-                        else alert('Error al guardar ajustes');
+                        const data = await res.json();
+                        if (res.ok) {
+                            if (data.restaurant_logo) setSettings({ ...settings, restaurant_logo: data.restaurant_logo });
+                            alert('Ajustes guardados');
+                        } else {
+                            alert('Error al guardar ajustes: ' + (data.error || ''));
+                        }
                     }} className="flex flex-col gap-6">
                         <div>
                             <label className="text-sm block mb-2 font-bold text-gray-400">Nombre del Restaurante</label>
@@ -999,19 +1012,31 @@ export default function AdminPage() {
                             />
                         </div>
                         <div>
-                            <label className="text-sm block mb-2 font-bold text-gray-400">URL del Logo (Supabase)</label>
-                            <input
-                                className="input"
-                                value={settings.restaurant_logo}
-                                onChange={e => setSettings({ ...settings, restaurant_logo: e.target.value })}
-                                placeholder="https://..."
-                            />
-                            {settings.restaurant_logo && (
-                                <div className="mt-4 p-4 bg-white rounded-lg inline-block">
-                                    <p className="text-xs text-gray-500 mb-2">Vista Previa:</p>
-                                    <img src={settings.restaurant_logo} alt="Preview" style={{ height: '60px' }} />
-                                </div>
-                            )}
+                            <label className="text-sm block mb-2 font-bold text-gray-400">Logo del Sistema (PNG/JPG)</label>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <input
+                                    type="file"
+                                    className="input"
+                                    style={{ marginBottom: 0 }}
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        if (file) {
+                                            setSettings({ ...settings, restaurant_logo: URL.createObjectURL(file) });
+                                        }
+                                    }}
+                                />
+                                {settings.restaurant_logo && (
+                                    <div style={{ width: '80px', height: '80px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #334155', background: 'white', padding: '4px' }}>
+                                        <img
+                                            src={settings.restaurant_logo}
+                                            alt="Preview"
+                                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                            <p className="text-xs text-gray-500 mt-2">Recomendado: Fondo blanco o transparente, proporción cuadrada.</p>
                         </div>
                         <button type="submit" className="btn">Guardar Cambios</button>
                     </form>
