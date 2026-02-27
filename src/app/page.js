@@ -297,7 +297,13 @@ export default function Home() {
             {error && <p className="text-danger text-center mb-6 font-bold">{error}</p>}
 
             <button type="submit" className="btn btn-shiny" disabled={loading}>
-              {loading ? 'VERIFICANDO...' : 'COMENZAR PEDIDO'}
+              {loading ? (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span className="spinner"></span> VERIFICANDO...
+                </span>
+              ) : (
+                'COMENZAR PEDIDO'
+              )}
             </button>
 
             <a
@@ -333,16 +339,16 @@ export default function Home() {
                 <button
                   className={`btn ${mealType === 'ALMUERZO' ? '' : 'btn-outline'}`}
                   onClick={() => setMealType('ALMUERZO')}
-                  style={{ height: '60px', fontWeight: 'bold' }}
+                  style={{ height: '60px', fontWeight: 'bold', transition: 'all 0.3s ease' }}
                 >
-                  ☀️ ALMUERZO
+                  <span style={{ fontSize: '1.25rem' }}>☀️</span> ALMUERZO
                 </button>
                 <button
                   className={`btn ${mealType === 'CENA' ? '' : 'btn-outline'}`}
                   onClick={() => setMealType('CENA')}
-                  style={{ height: '60px', fontWeight: 'bold' }}
+                  style={{ height: '60px', fontWeight: 'bold', transition: 'all 0.3s ease' }}
                 >
-                  🌙 CENA
+                  <span style={{ fontSize: '1.25rem' }}>🌙</span> CENA
                 </button>
               </div>
 
@@ -351,18 +357,18 @@ export default function Home() {
                 <button
                   className={`btn ${orderType === 'local' ? '' : 'btn-outline'}`}
                   onClick={() => setOrderType('local')}
-                  style={{ height: '100px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
+                  style={{ height: '100px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', transition: 'all 0.3s ease' }}
                 >
-                  <span style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🍽️</span>
-                  <span>LOCAL</span>
+                  <span style={{ fontSize: '2rem' }}>🍽️</span>
+                  <span className="text-sm">LOCAL</span>
                 </button>
                 <button
                   className={`btn ${orderType === 'llevar' ? '' : 'btn-outline'}`}
                   onClick={() => setOrderType('llevar')}
-                  style={{ height: '100px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
+                  style={{ height: '100px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', transition: 'all 0.3s ease' }}
                 >
-                  <span style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🥡</span>
-                  <span>LLEVAR</span>
+                  <span style={{ fontSize: '2rem' }}>🥡</span>
+                  <span className="text-sm">LLEVAR</span>
                 </button>
               </div>
             </div>
@@ -472,9 +478,15 @@ export default function Home() {
               <button onClick={clearSignature} className="text-xs text-red-400 mt-2 hover:underline">Borrar Firma</button>
             </div>
 
-            <div className="grid gap-4">
+            <div className="grid gap-4 mt-4">
               <button onClick={handleSubmitOrder} className="btn" disabled={loading || !signature}>
-                {loading ? 'PROCESANDO...' : 'CONFIRMAR PEDIDO'}
+                {loading ? (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span className="spinner"></span> PROCESANDO...
+                  </span>
+                ) : (
+                  'CONFIRMAR PEDIDO'
+                )}
               </button>
               <button
                 onClick={() => { setStep(1); setRut(''); setError(''); setSignature(''); setGuestNames(''); setOrderDetail(''); setMealType('ALMUERZO'); }}
